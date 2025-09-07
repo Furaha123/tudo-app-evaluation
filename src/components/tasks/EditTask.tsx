@@ -20,6 +20,8 @@ import { formatDate, showToast, timeAgo } from "../../utils";
 import { useTheme } from "@emotion/react";
 import { ColorPalette } from "../../theme/themeConfig";
 import { CategorySelect } from "../CategorySelect";
+import PrioritySelect from "../PrioritySelect";
+import { PriorityLevel } from "../tasks/PriorityBadge";
 
 interface EditTaskProps {
   open: boolean;
@@ -33,6 +35,7 @@ export const EditTask = ({ open, task, onClose }: EditTaskProps) => {
   const [editedTask, setEditedTask] = useState<Task | undefined>(task);
   const [emoji, setEmoji] = useState<string | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<Category[]>([]);
+  const [priority, setPriority] = useState<PriorityLevel | null>(task?.priority || null);
 
   const theme = useTheme();
 
@@ -54,10 +57,19 @@ export const EditTask = ({ open, task, onClose }: EditTaskProps) => {
     }));
   }, [emoji]);
 
+  // Effect hook to update the editedTask with the selected priority.
+  useEffect(() => {
+    setEditedTask((prevTask) => ({
+      ...(prevTask as Task),
+      priority: priority || undefined,
+    }));
+  }, [priority]);
+
   // Effect hook to update the editedTask when the task prop changes.
   useEffect(() => {
     setEditedTask(task);
     setSelectedCategories(task?.category as Category[]);
+    setPriority(task?.priority || null);
   }, [task]);
 
   // Event handler for input changes in the form fields.
@@ -84,6 +96,7 @@ export const EditTask = ({ open, task, onClose }: EditTaskProps) => {
             description: editedTask.description || undefined,
             deadline: editedTask.deadline || undefined,
             category: editedTask.category || undefined,
+            priority: editedTask.priority || undefined,
             lastSave: new Date(),
           };
         }
@@ -106,6 +119,7 @@ export const EditTask = ({ open, task, onClose }: EditTaskProps) => {
     onClose();
     setEditedTask(task);
     setSelectedCategories(task?.category as Category[]);
+    setPriority(task?.priority || null);
   };
 
   useEffect(() => {
@@ -268,6 +282,9 @@ export const EditTask = ({ open, task, onClose }: EditTaskProps) => {
               }));
             }}
           />
+        </div>
+        <div style={{ marginTop: "16px" }}>
+          <PrioritySelect value={priority} onChange={setPriority} width="100%" allowClear={true} />
         </div>
       </DialogContent>
       <DialogActions>

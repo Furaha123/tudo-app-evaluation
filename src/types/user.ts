@@ -1,4 +1,5 @@
 import type { EmojiStyle } from "emoji-picker-react";
+import { PriorityLevel } from "../components/tasks/PriorityBadge";
 
 /**
  * Represents a universally unique identifier.
@@ -45,17 +46,12 @@ export interface Task {
   description?: string;
   emoji?: string;
   color: string;
-  /**
-   * created at date
-   */
   date: Date;
   deadline?: Date;
   category?: Category[];
+  priority?: PriorityLevel; // Add this line
   lastSave?: Date;
   sharedBy?: string;
-  /**
-   * Optional numeric position for drag-and-drop (for p2p sync)
-   */
   position?: number;
 }
 

@@ -29,6 +29,7 @@ import { UserContext } from "../../contexts/UserContext";
 import { TaskContext } from "../../contexts/TaskContext";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import PriorityBadge from "./PriorityBadge";
 
 interface TaskItemProps {
   task: Task;
@@ -242,6 +243,12 @@ export const TaskItem = memo(
                 />
               ))}
             </TaskCategoriesContainer>
+          )}
+
+          {task.priority && (
+            <div style={{ marginTop: "8px" }}>
+              <PriorityBadge priority={task.priority} size="small" badgeVariant="minimal" />
+            </div>
           )}
         </TaskInfo>
         <TaskActionsContainer>{actions}</TaskActionsContainer>

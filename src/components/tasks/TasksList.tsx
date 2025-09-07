@@ -60,7 +60,8 @@ import {
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis, restrictToParentElement } from "@dnd-kit/modifiers";
 import DisabledThemeProvider from "../../contexts/DisabledThemeProvider";
-
+import { useFilterContext } from "../../contexts/FilterContex";
+import { FilterBar } from "./FilterBar";
 const TaskMenuButton = memo(
   ({ task, onClick }: { task: Task; onClick: (event: React.MouseEvent<HTMLElement>) => void }) => (
     <IconButton
@@ -105,6 +106,7 @@ export const TasksList: React.FC = () => {
   const open = Boolean(anchorEl);
 
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const { dateFilter, isToday, isThisWeek, isInDateRange, dateRange } = useFilterContext();
 
   const [deleteSelectedOpen, setDeleteSelectedOpen] = useState<boolean>(false);
   const [categories, setCategories] = useState<Category[] | undefined>(undefined);
@@ -190,6 +192,26 @@ export const TasksList: React.FC = () => {
       unpinnedTasks = unpinnedTasks.filter(searchFilter);
       pinnedTasks = pinnedTasks.filter(searchFilter);
 
+      // Add date filtering logic
+      const dateFilterFn = (task: Task) => {
+        const taskDate = task.deadline ? new Date(task.deadline) : new Date(task.date);
+
+        switch (dateFilter) {
+          case "today":
+            return isToday(taskDate);
+          case "thisWeek":
+            return isThisWeek(taskDate);
+          case "custom":
+            return isInDateRange(taskDate, dateRange);
+          case "all":
+          default:
+            return true;
+        }
+      };
+
+      unpinnedTasks = unpinnedTasks.filter(dateFilterFn);
+      pinnedTasks = pinnedTasks.filter(dateFilterFn);
+
       // Sort tasks based on the selected sort option
       const sortTasks = (tasks: Task[]) => {
         switch (sortOption) {
@@ -230,7 +252,17 @@ export const TasksList: React.FC = () => {
 
       return [...pinnedTasks, ...unpinnedTasks];
     },
-    [search, selectedCatId, user.settings?.doneToBottom, sortOption],
+    [
+      search,
+      selectedCatId,
+      user.settings?.doneToBottom,
+      sortOption,
+      dateFilter,
+      isToday,
+      isThisWeek,
+      isInDateRange,
+      dateRange,
+    ],
   );
 
   const orderedTasks = useMemo(() => reorderTasks(user.tasks), [user.tasks, reorderTasks]);
@@ -449,6 +481,7 @@ export const TasksList: React.FC = () => {
                 }}
               />
               <TaskSort />
+              <FilterBar />
             </DisabledThemeProvider>
           </Box>
         )}
@@ -671,15 +704,44 @@ export const TasksList: React.FC = () => {
             Click on the <span>+</span> button to add one
           </NoTasks>
         )}
-        {search && orderedTasks.length === 0 && user.tasks.length > 0 ? (
-          <TaskNotFound>
-            <b>No tasks found</b>
-            <br />
-            Try searching with different keywords.
-            <div style={{ marginTop: "14px" }}>
-              <TaskIcon scale={0.8} />
-            </div>
-          </TaskNotFound>
+        {(search || dateFilter !== "all") && orderedTasks.length === 0 && user.tasks.length > 0 ? (
+          search ? (
+            <TaskNotFound>
+              <b>No tasks found</b>
+              <br />
+              Try searching with different keywords.
+              <div style={{ marginTop: "14px" }}>
+                <TaskIcon scale={0.8} />
+              </div>
+            </TaskNotFound>
+          ) : dateFilter === "today" ? (
+            <TaskNotFound>
+              <b>No tasks for today</b>
+              <br />
+              No tasks are due today.
+              <div style={{ marginTop: "14px" }}>
+                <TaskIcon scale={0.8} />
+              </div>
+            </TaskNotFound>
+          ) : dateFilter === "thisWeek" ? (
+            <TaskNotFound>
+              <b>No tasks for this week</b>
+              <br />
+              No tasks are due this week.
+              <div style={{ marginTop: "14px" }}>
+                <TaskIcon scale={0.8} />
+              </div>
+            </TaskNotFound>
+          ) : (
+            <TaskNotFound>
+              <b>No tasks for selected date range</b>
+              <br />
+              Try selecting a different date range.
+              <div style={{ marginTop: "14px" }}>
+                <TaskIcon scale={0.8} />
+              </div>
+            </TaskNotFound>
+          )
         ) : null}
         <EditTask
           open={editModalOpen}

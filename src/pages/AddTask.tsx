@@ -14,6 +14,8 @@ import { ColorPalette } from "../theme/themeConfig";
 import InputThemeProvider from "../contexts/InputThemeProvider";
 import { CategorySelect } from "../components/CategorySelect";
 import { useToasterStore } from "react-hot-toast";
+import PrioritySelect from "../components/PrioritySelect";
+import { PriorityLevel } from "../components/tasks/PriorityBadge";
 
 const AddTask = () => {
   const { user, setUser } = useContext(UserContext);
@@ -32,6 +34,11 @@ const AddTask = () => {
   const [selectedCategories, setSelectedCategories] = useStorageState<Category[]>(
     [],
     "categories",
+    "sessionStorage",
+  );
+  const [priority, setPriority] = useStorageState<PriorityLevel | null>(
+    null,
+    "priority",
     "sessionStorage",
   );
 
@@ -111,8 +118,8 @@ const AddTask = () => {
       date: new Date(),
       deadline: deadline !== "" ? new Date(deadline) : undefined,
       category: selectedCategories ? selectedCategories : [],
+      priority: priority || undefined,
     };
-
     setUser((prevUser) => ({
       ...prevUser,
       tasks: [...prevUser.tasks, newTask],
@@ -129,7 +136,15 @@ const AddTask = () => {
       },
     );
 
-    const itemsToRemove = ["name", "color", "description", "emoji", "deadline", "categories"];
+    const itemsToRemove = [
+      "name",
+      "color",
+      "description",
+      "emoji",
+      "deadline",
+      "categories",
+      "priority",
+    ];
     itemsToRemove.map((item) => sessionStorage.removeItem(item));
   };
 
@@ -232,6 +247,7 @@ const AddTask = () => {
           }}
           fontColor={getFontColor(theme.secondary)}
         />
+        <PrioritySelect value={priority} onChange={setPriority} width="400px" allowClear={true} />
         <AddTaskButton
           onClick={handleAddTask}
           disabled={
