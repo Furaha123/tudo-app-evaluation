@@ -1,54 +1,75 @@
-# 📝 React Todo App — Enhanced
+# AWS CodePipeline - S3 Static Website Deployment
 
-A fast, modern Todo app built with React + TypeScript. Includes **date filters** and **priority management**, task sharing via link/QR, P2P sync, themes, and offline PWA support.
+Automated CI/CD deployment of a React application using AWS CodePipeline, CodeBuild, and S3 static website hosting.
 
-**Live Demo:**  
-👉 **http://reeact-tudo-app.s3-website.eu-north-1.amazonaws.com/**
-
----
-
-## ✨ Features
-
-- **Date Filters** – Filter tasks by custom range or quick presets
-- **Priority Management** – High/Medium/Low with color badges & sorting
-- **Share by Link / QR** – Send a task to anyone instantly
-- **P2P Task Sync (WebRTC)** – Sync tasks device-to-device
-- **Themes & Dark Mode** – Multiple color themes, auto dark
-- **PWA Offline** – Installable, works offline, app badges
-- **Import/Export JSON** – Backup/restore tasks easily
-- **Read Aloud** – SpeechSynthesis reads tasks
-- **Update Prompt** – In-app notice for new versions
+**Live Demo:** http://reeact-tudo-app.s3-website.eu-north-1.amazonaws.com/
 
 ---
 
-## ☁️ AWS Deployment — S3 + CodeBuild + CodePipeline
+## Architecture
 
-This project is deployed on AWS using **S3 Static Website Hosting** with an automated **CI/CD pipeline** powered by **CodePipeline** and **CodeBuild**.
+```
+GitHub → CodePipeline → CodeBuild → S3 → Live Website
+```
 
-````bash
-npm run build
-# Output goes to: dist/
-## 🧱 Tech Stack
-
-- **React**
-- **TypeScript**
-- **Vite**
-- **MUI** + **Emotion**
-- **React Context** for state
-- **Vitest** for tests
+- **Source:** GitHub repository
+- **Build:** AWS CodeBuild
+- **Deploy:** Amazon S3 static hosting
 
 ---
 
-## 🚀 Getting Started
+## Pipeline Workflow
 
-```bash
-# 1) Install
-npm install
+![Pipeline Dashboard](../todo-evaluation-app/src/assets/codepipeline.png)
 
-# 2) Start dev server
-npm run dev
-# App at http://localhost:5173
+### 1. Source Stage
 
-# 3) (Optional) Host dev over HTTPS for mobile testing
-npm run dev:host
-````
+CodePipeline detects GitHub repository changes and pulls the latest code.
+
+### 2. Build Stage
+
+CodeBuild runs `npm install` and `npm run build` to create production files.
+
+### 3. Deploy Stage
+
+Built artifacts are deployed to S3 bucket for static website hosting.
+
+---
+
+## Configuration
+
+### buildspec.yml
+
+```yaml
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - npm install
+  build:
+    commands:
+      - npm run build
+artifacts:
+  files:
+    - "**/*"
+  base-directory: dist
+```
+
+---
+
+## Setup Steps
+
+1. **Create S3 bucket** and enable static website hosting
+2. **Create CodeBuild project** linked to GitHub repository
+3. **Create CodePipeline** with Source (GitHub), Build (CodeBuild), and Deploy (S3) stages
+4. **Push code** to trigger automatic deployment
+
+---
+
+## Results
+
+✅ Automated CI/CD pipeline  
+✅ Zero-downtime deployments  
+✅ Fast deployment cycle  
+✅ Cost-effective S3 hosting
